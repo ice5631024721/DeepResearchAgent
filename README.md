@@ -6,7 +6,7 @@ DeepResearchAgent is a hierarchical multi-agent system designed not only for dee
 
 ## Architecture
 
-The system adopts a two-layer structure:
+The system adopts [Makefile](Makefile)a two-layer structure:
 
 ### 1. Top-Level Planning Agent
 - Responsible for understanding, decomposing, and planning the overall workflow for a given task.
@@ -28,14 +28,33 @@ The system adopts a two-layer structure:
 - Hierarchical agent collaboration for complex and dynamic task scenarios
 - Extensible agent system, allowing easy integration of additional specialized agents
 - Automated information analysis, research, and web interaction capabilities
+  
+
+## Updates
+- 2025.05.27
+  - Updated the available remote API calls to support OpenAI, Anthropic, and Google LLMs.
+  - Added support for local Qwen models (via vllm, compatible with OpenAI API format, see details at the end of README)
+
+## TODO List
+- [x] Asynchronous feature completed
+- [ ] Image Generation Agent to be developed
+- [ ] MCP in progress
+- [ ] AI4Research Agent to be developed
+- [ ] Novel Writing Agent to be developed
 
 ## Installation
 
 ### Prepare Environment
 ```
+# poetry install environment
 conda create -n dra python=3.11
 conda activate dra
 make install
+
+# (Optional) You can also use requirements.txt to setup the environment
+conda create -n dra python=3.11
+conda activate dra
+make install-requirements
 
 # If you encounter any issues with Playwright during installation, you can install it manually:
 pip install playwright
@@ -49,21 +68,25 @@ playwright install chromium --with-deps --no-shell
 PYTHONWARNINGS=ignore # ignore warnings
 ANONYMIZED_TELEMETRY=false # disable telemetry
 HUGGINEFACE_API_KEY=abcabcabc # your huggingface api key
-OPENAI_BASE_URL=https://api.openai.com/v1
+OPENAI_API_BASE=https://api.openai.com/v1
 OPENAI_API_KEY=abcabcabc # your openai api key
-
-# (Optional) Local proxy. If you are using a private proxy, please refer to the configuration guide as follows:
-LOCAL_PROXY_BASE=http://localhost:6655
-SKYWORK_API_BASE=abcabcabs
-SKYWORK_OPENROUTER_BJ_API_BASE=abcabcabs
-SKYWORK_OPENROUTER_US_API_BASE=abcabcabs
-SKYWORK_AZURE_HK_API_BASE=abcabcabs
-SKYWORK_WHISPER_BJ_API_BASE=abcabcabs
-SKYWORK_GOOGLE_API_BASE=abcabcabs
-SKYWORK_API_KEY=abcabcabs
-SKYWORK_GOOGLE_SEARCH_API=abcabcabs
+ANTHROPIC_API_BASE=https://api.anthropic.com
+ANTHROPIC_API_KEY=abcabcabc # your anthropic api key
+GOOGLE_APPLICATION_CREDENTIALS=/your/user/path/.config/gcloud/application_default_credentials.json
+GOOGLE_API_BASE=https://generativelanguage.googleapis.com
+GOOGLE_API_KEY=abcabcabc # your google api key
 ```
 
+```
+Note: Maybe you have some problems using google api, here is the reference
+1. Get api key from https://aistudio.google.com/app/apikey
+
+2. Get `application_default_credentials.json`. Here is the reference: https://cloud.google.com/docs/authentication/application-default-credentials?hl=zh-cn
+# Creating a Google API key requires it to be linked to a project, but the project may also need Vertex AI authorization, so it is necessary to obtain the appropriate credentials.
+brew install --cask google-cloud-sdk
+gcloud init
+gcloud auth application-default login
+```
 
 ## Usage
 
@@ -117,3 +140,25 @@ Contributions and suggestions are welcome! Feel free to open issues or submit pu
   year =         {2025}
 }
 ```
+
+## Questions
+
+### 1. About Qwen models
+Our framework now supports local Qwen models, including qwen2.5-7b-instruct, qwen2.5-14b-instruct, and qwen2.5-32b-instruct.
+```
+# Configure your config file to use qwen's model
+model_id = "qwen2.5-7b-instruct"
+```
+
+### 2. About browser use
+If you are having problems with your browser, please reinstall the browser tool.
+```
+pip install "browser-use[memory]"==0.1.47
+
+# install playwright
+pip install playwright
+playwright install chromium --with-deps --no-shell
+```
+
+### 3. About calling for sub agents
+I’ve found that both OpenAI and Google models are strictly trained for function calling, which means they no longer use JSON outputs to invoke sub-agents. Therefore, I recommend using Claude-3.7-Sonnet as the planning agent whenever possible. That said, I will fix this issue soon by providing the sub-agents to the planning agent via function calling.

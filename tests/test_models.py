@@ -9,13 +9,19 @@ import asyncio
 root = str(Path(__file__).resolve().parents[1])
 sys.path.append(root)
 
-from src.tools.web_fetcher import WebFetcherTool
 from src.models import model_manager
 
 if __name__ == "__main__":
     model_manager.init_models(use_local_proxy=False)
     
-    fetcher = WebFetcherTool()
-    url = "https://www.scientistsforxr.earth/2023-ipcc"
-    content = asyncio.run(fetcher.forward(url))
-    print(content)
+    messages = [
+        {
+            "role": "user",
+            "content": "What is the capital of France?"
+        }
+    ]
+    
+    response = asyncio.run(model_manager.registed_models["qwen2.5-7b-instruct"](
+        messages=messages,
+    ))
+    print(response)

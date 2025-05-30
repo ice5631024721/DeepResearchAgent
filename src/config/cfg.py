@@ -42,6 +42,10 @@ class BrowserToolConfig(BaseModel):
     }, description="Proxy settings for the browser")
     max_length: int = Field(default=50000, description="Maximum character length for the content to be fetched")
 
+class DeepAnalyzerToolConfig(BaseModel):
+    analyzer_model_ids: List[str] = Field(default_factory=lambda: ["gemini-2.5-pro"], description="Model IDs for the LLMs to use")
+    summarizer_model_id: str = Field(default="gemini-2.5-pro", description="Model ID for the LLM to use")
+
 class AgentConfig(BaseModel):
     model_id: str = Field(default="claude37-sonnet-thinking", 
                           description="Model ID for the LLM to use")
@@ -107,7 +111,7 @@ class Config(BaseModel):
     concurrency: int = 4
     log_path: str = 'log.txt'
     download_path: str = 'downloads_folder'
-    use_local_proxy: bool = Field(default=True, description="Whether to use local proxy")
+    use_local_proxy: bool = Field(default=False, description="Whether to use local proxy")
     split: str = Field(default="validation", description="Set name")
     save_path: str = Field(default="agentscope.jsonl", description="Path to save the answers")
     
@@ -115,6 +119,7 @@ class Config(BaseModel):
     searcher_tool: SearcherToolConfig = Field(default_factory=SearcherToolConfig)
     deep_researcher_tool: DeepResearcherToolConfig = Field(default_factory=DeepResearcherToolConfig)
     browser_tool: BrowserToolConfig = Field(default_factory=BrowserToolConfig)
+    deep_analyzer_tool: DeepAnalyzerToolConfig = Field(default_factory=DeepAnalyzerToolConfig)
     
     # Agent Config
     agent: HierarchicalAgentConfig = Field(default_factory=HierarchicalAgentConfig)
@@ -149,6 +154,7 @@ class Config(BaseModel):
         self.searcher_tool = SearcherToolConfig(**config["searcher_tool"])
         self.deep_researcher_tool = DeepResearcherToolConfig(**config["deep_researcher_tool"])
         self.browser_tool = BrowserToolConfig(**config["browser_tool"])
+        self.deep_analyzer_tool = DeepAnalyzerToolConfig(**config["deep_analyzer_tool"])
 
         # Agent Config
         planning_agent_config = AgentConfig(**config["agent"]["planning_agent_config"])

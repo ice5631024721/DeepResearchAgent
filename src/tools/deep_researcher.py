@@ -4,7 +4,7 @@ import time
 from typing import List, Optional, Set, Tuple
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from src.registry import REGISTED_MODELS
+from src.models import model_manager
 from src.tools.web_searcher import WebSearcherTool, SearchResult
 from src.tools import AsyncTool, ToolResult
 from src.config import config
@@ -269,7 +269,7 @@ class DeepResearcherTool(AsyncTool):
     )
 
     def __init__(self):
-        self.model = REGISTED_MODELS[self.deep_researcher_config.model_id]
+        self.model = model_manager.registed_models[self.deep_researcher_config.model_id]
         self.web_searcher = WebSearcherTool()
         self.web_searcher.fetch_content = True # Enable content fetching
         super().__init__()
@@ -566,7 +566,7 @@ class DeepResearcherTool(AsyncTool):
         return insights
 
     async def _summary(self, query: str, reference_materials: str) -> str:
-        model = REGISTED_MODELS["gpt-4o-search-preview"]
+        model = model_manager.registed_models["gpt-4o-search-preview"]
 
         messages = [
             {"role": "user", "content": query}
