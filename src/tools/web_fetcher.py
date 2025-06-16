@@ -2,7 +2,6 @@ from typing import Optional
 from markitdown._base_converter import DocumentConverterResult
 from crawl4ai import AsyncWebCrawler
 
-from src.config import config
 from src.tools.markdown.mdconvert import MarkitdownConverter
 from src.tools import AsyncTool
 from src.logger import logger
@@ -48,11 +47,13 @@ class WebFetcherTool(AsyncTool):
     }
     output_type = "any"
 
-    converter = MarkitdownConverter(
-        use_llm=False,
-        model_id="gpt-4.1",
-        timeout=30,
-    )
+    def __init__(self):
+        super(WebFetcherTool, self).__init__()
+        self.converter = MarkitdownConverter(
+            use_llm=False,
+            model_id="gpt-4.1",
+            timeout=30,
+        )
 
     async def forward(self, url: str) -> Optional[DocumentConverterResult]:
         """Fetch content from a given URL."""

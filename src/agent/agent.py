@@ -52,7 +52,7 @@ def create_agent():
             tools.append(REGISTED_TOOLS[tool_id]())
 
         tools = tools + sub_agent_tools
-            
+
         agent = REGISTED_AGENTS["planning_agent"](
             config=planning_agent_config,
             model=model_manager.registed_models[planning_agent_config.model_id],

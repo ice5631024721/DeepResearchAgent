@@ -4,7 +4,7 @@ concurrency = 4
 workdir = "workdir"
 log_path = "log.txt"
 download_path = "downloads_folder"
-use_local_proxy = true
+use_local_proxy = false # true for local proxy, false for public proxy
 split = "validation"
 save_path = "dra.jsonl"
 
@@ -22,14 +22,14 @@ fetch_content = false
 max_length = 50000
 
 [deep_researcher_tool]
-model_id = "gpt-4.1"
+model_id = "Qwen"
 max_depth = 2
 max_insights = 20
 time_limit_seconds = 60
 max_follow_ups = 3
+summarizer_model_id = "Qwen"
 
 [browser_tool]
-model_id = "gpt-4.1"
 headless = false
 disable_security = true
 extra_chromium_args = []
@@ -44,8 +44,8 @@ username = "xxxx"
 password = "xxxx"
 
 [deep_analyzer_tool]
-analyzer_model_ids = ["gemini-2.5-pro", "o3"]
-summarizer_model_id = "gemini-2.5-pro"
+analyzer_model_ids = ["Qwen"]
+summarizer_model_id = "Qwen"
 
 # Agent configs
 [agent]
@@ -53,34 +53,34 @@ name = "dra"
 use_hierarchical_agent = true
 
 [agent.planning_agent_config]
-model_id = "claude-4-sonnet"
+model_id = "Qwen"
 name = "planning_agent"
 description = "A planning agent that can plan the steps to complete the task."
-max_steps = 20
+max_steps = 15
 template_path = "src/agent/planning_agent/prompts/planning_agent.yaml"
 tools = ["planning"]
 managed_agents = ["deep_analyzer_agent", "browser_use_agent", "deep_researcher_agent"]
 
 [agent.deep_analyzer_agent_config]
-model_id = "claude-4-sonnet"
+model_id = "Qwen"
 name = "deep_analyzer_agent"
-description = "A deep analyzer agent that can perform systematic, step-by-step analysis."
+description = "Performs systematic, step-by-step analysis..."
 max_steps = 3
 template_path = "src/agent/deep_analyzer_agent/prompts/deep_analyzer_agent.yaml"
 tools = ["deep_analyzer", "python_interpreter"]
 
 [agent.browser_use_agent_config]
-model_id = "gpt-4.1"
+model_id = "Qwen"
 name = "browser_use_agent"
-description = "A browser use agent that can search relevant web pages and interact with them."
+description = "Searches relevant web pages and interacts with them."
 max_steps = 5
 template_path = "src/agent/browser_use_agent/prompts/browser_use_agent.yaml"
 tools = ["auto_browser_use", "python_interpreter"]
 
 [agent.deep_researcher_agent_config]
-model_id = "claude-4-sonnet"
+model_id = "Qwen"
 name = "deep_researcher_agent"
-description = "A deep researcher agent that can conduct extensive web searches."
+description = "Conducts extensive web searches."
 max_steps = 3
 template_path = "src/agent/deep_researcher_agent/prompts/deep_researcher_agent.yaml"
 tools = ["deep_researcher", "python_interpreter"]

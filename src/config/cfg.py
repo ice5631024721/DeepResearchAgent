@@ -21,13 +21,14 @@ class SearcherToolConfig(BaseModel):
     max_length: int = Field(default=50000, description="Maximum character length for the content to be fetched")
 
 class DeepResearcherToolConfig(BaseModel):
-    model_id: str = Field(default="claude37-sonnet-thinking", description="Model ID for the LLM to use")
+    model_id: str = Field(default="gpt-4.1", description="Model ID for the LLM to use")
     max_depth: int = Field(default=2, description="Maximum depth for the search")
     max_insights: int = Field(default=20, description="Maximum number of insights to extract")
     time_limit_seconds: int = Field(default=60, description="Time limit for the search in seconds")
     max_follow_ups: int = Field(default=3, description="Maximum number of follow-up questions to ask")
 
 class BrowserToolConfig(BaseModel):
+    model_id: str = Field(default="gpt-4.1", description="Model ID for the LLM to use")
     headless: bool = Field(False, description="Whether to run browser in headless mode")
     disable_security: bool = Field(True, description="Disable browser security features")
     extra_chromium_args: List[str] = Field(default_factory=list, description="Extra arguments to pass to the browser")
@@ -43,11 +44,11 @@ class BrowserToolConfig(BaseModel):
     max_length: int = Field(default=50000, description="Maximum character length for the content to be fetched")
 
 class DeepAnalyzerToolConfig(BaseModel):
-    analyzer_model_ids: List[str] = Field(default_factory=lambda: ["gemini-2.5-pro"], description="Model IDs for the LLMs to use")
+    analyzer_model_ids: List[str] = Field(default_factory=lambda: ["gemini-2.5-pro", "o3"], description="Model IDs for the LLMs to use")
     summarizer_model_id: str = Field(default="gemini-2.5-pro", description="Model ID for the LLM to use")
 
 class AgentConfig(BaseModel):
-    model_id: str = Field(default="claude37-sonnet-thinking", 
+    model_id: str = Field(default="gpt-4.1",
                           description="Model ID for the LLM to use")
     name: str = Field(default="agent", 
                       description="Name of the agent")
@@ -63,10 +64,10 @@ class AgentConfig(BaseModel):
                                       description="List of agents the agent can manage")
 
 class HierarchicalAgentConfig(BaseModel):
-    name: str = Field(default="agentscope", description="Name of the hierarchical agent")
+    name: str = Field(default="dra", description="Name of the hierarchical agent")
     use_hierarchical_agent: bool = Field(default=True, description="Whether to use hierarchical agent")
     planning_agent_config: AgentConfig = Field(default_factory=lambda: AgentConfig(
-        model_id="claude37-sonnet-thinking",
+        model_id="gpt-4.1",
         name="planning_agent",
         description="A planning agent that can plan the steps to complete the task.",
         max_steps=20,
@@ -75,7 +76,7 @@ class HierarchicalAgentConfig(BaseModel):
         managed_agents=["deep_analyzer_agent", "browser_use_agent", "deep_researcher_agent"],
     ))
     deep_analyzer_agent_config: AgentConfig = Field(default_factory=lambda: AgentConfig(
-        model_id="claude37-sonnet-thinking",
+        model_id="gpt-4.1",
         name="deep_analyzer_agent",
         description="A team member that that performs systematic, step-by-step analysis of a given task, optionally leveraging information from external resources such as attached file or uri to provide comprehensive reasoning and answers. For any tasks that require in-depth analysis, particularly those involving attached file or uri, game, chess, computational tasks, or any other complex tasks. Please ask him for the reasoning and the final answer.",
         max_steps=3,
@@ -91,7 +92,7 @@ class HierarchicalAgentConfig(BaseModel):
         tools=["auto_browser_use", "python_interpreter"],
     ))
     deep_researcher_agent_config: AgentConfig = Field(default_factory=lambda: AgentConfig(
-        model_id="claude37-sonnet-thinking",
+        model_id="gpt-4.1",
         name="deep_researcher_agent",
         description="A team member capable of conducting extensive web searches to complete tasks, primarily focused on retrieving broad and preliminary information for quickly understanding a topic or obtaining rough answers. For tasks that require precise, structured, or interactive page-level information retrieval, please use the `browser_use_agent`.",
         max_steps=3,
@@ -111,7 +112,7 @@ class Config(BaseModel):
     concurrency: int = 4
     log_path: str = 'log.txt'
     download_path: str = 'downloads_folder'
-    use_local_proxy: bool = Field(default=False, description="Whether to use local proxy")
+    use_local_proxy: bool = Field(default=True, description="Whether to use local proxy")
     split: str = Field(default="validation", description="Set name")
     save_path: str = Field(default="agentscope.jsonl", description="Path to save the answers")
     

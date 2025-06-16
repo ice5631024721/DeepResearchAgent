@@ -2,21 +2,19 @@ import os
 import subprocess
 import atexit
 import signal
-import time
 from dotenv import load_dotenv
 load_dotenv(verbose=True)
 
-import asyncio
+from contextlib import nullcontext
 from browser_use import Agent
-from browser_use import BrowserConfig, Browser
-from langchain_openai import ChatOpenAI
 
 from src.proxy.local_proxy import PROXY_URL, proxy_env
 from src.tools import AsyncTool, ToolResult
-from src.tools.browser import Controller, CDP
+from src.tools.browser import Controller
 from src.utils import assemble_project_path
 from src.config import config
 from src.registry import register_tool
+from src.models import model_manager
 
 @register_tool("auto_browser_use")
 class AutoBrowserUseTool(AsyncTool):
@@ -35,14 +33,16 @@ class AutoBrowserUseTool(AsyncTool):
     output_type = "any"
 
     def __init__(self):
-        super(AutoBrowserUseTool, self).__init__()
+
+        self.browser_tool_config = config.browser_tool
 
         self.http_server_path = assemble_project_path("src/tools/browser/http_server")
         self.http_save_path = assemble_project_path("src/tools/browser/http_server/local")
         os.makedirs(self.http_save_path, exist_ok=True)
 
         self._init_pdf_server()
-        self.browser_agent = self._init_browser_agent()
+
+        super(AutoBrowserUseTool, self).__init__()
 
     def _init_pdf_server(self):
 
@@ -64,52 +64,28 @@ class AutoBrowserUseTool(AsyncTool):
                 print("Force killing server...")
                 server_proc.kill()
 
-    def _init_browser_agent(self):
-        """
-        Initialize the browser agent with the given configuration.
-        """
-
-        if config.use_local_proxy:
-            os.environ["HTTP_PROXY"] = PROXY_URL
-            os.environ["HTTPS_PROXY"] = PROXY_URL
-
+    async def _browser_task(self, task):
         controller = Controller(http_save_path=self.http_save_path)
 
-        if config.use_local_proxy:
-            model_id = "gpt-4.1"
-            model = ChatOpenAI(
-                model=model_id,
-                api_key=os.getenv("SKYWORK_API_KEY"),
-                base_url=os.getenv("SKYWORK_API_BASE"),
-            )
-        else:
-            model_id = "gpt-4.1"
-            model = ChatOpenAI(
-                model=model_id,
-                api_key=os.getenv("OPENAI_API_KEY"),
-                base_url=os.getenv("OPENAI_API_BASE"),
-            )
+        model_id = self.browser_tool_config.model_id
+
+        assert model_id in ['gpt-4.1'], f"Model should be in [gpt-4.1, ], but got {model_id}. Please check your config file."
+
+        if "langchain" not in model_id:
+            model_id = f"langchain-{model_id}"
+
+        model = model_manager.registed_models[model_id]
 
         browser_agent = Agent(
-            task="",
+            task=task,
             llm=model,
             enable_memory=False,
             controller=controller,
             page_extraction_llm=model,
         )
 
-        return browser_agent
-
-    async def _browser_task(self, task):
-        if config.use_local_proxy:
-            with proxy_env(PROXY_URL):
-                self.browser_agent.add_new_task(task)
-                history = await self.browser_agent.run(max_steps=50)
-                contents = history.extracted_content()
-        else:
-            self.browser_agent.add_new_task(task)
-            history = await self.browser_agent.run(max_steps=50)
-            contents = history.extracted_content()
+        history = await browser_agent.run(max_steps=50)
+        contents = history.extracted_content()
         return "\n".join(contents)
 
     async def forward(self, task: str) -> ToolResult:
